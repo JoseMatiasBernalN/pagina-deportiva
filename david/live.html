@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayExpert - Apuestas Deportivas</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=menu" />
+  <link rel="stylesheet" href="estilo.css">
+
+</head>
+<body>
+  <header class="header">
+    <button class="menu-toggle" id="menu-button">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <div class="logo">
+      <img src="imagenes/logo.png" alt="PlayExpert Logo">
+      <div class="logo-text">PlayExpert</div>
+    </div>
+    <nav id="nav-principal" class="nav">
+      <ul> 
+        <h3><li><a href="juegos.html">juegos</a></li></h3>
+        <h3><li><a href="apuestas_live.html">Apuestas en Vivo</a></li></h3>
+        <h3><li><a href="Futbol.html">Jugadores</a></li></h3>
+        <h3><li><a href="cuenta.html">Mi Cuenta</a></li></h3>
+        <h3><li><a href="iniciosesion.html">inicio de sesion</a></li></h3>
+     
+      </ul>
+    </nav>
+  </header>
+
+  <div class="hero-video">
+    <video class="bg-video" autoplay muted loop playsinline>
+      <source src="videos/VIDEO.mp4" type="video/mp4">
+      Tu navegador no soporta videos HTML5.
+    </video>
+    <img src="img/sports-bg.jpg" alt="Fondo alternativo" class="bg-image">
+    <div class="hero-content">
+      <h1>¡Las Mejores Apuestas Deportivas!</h1>
+      <p>Gana grande con PlayExpert. Las mejores cuotas en fútbol, baloncesto, tenis y más. ¡Regístrate ahora y obtén un bono de bienvenida de hasta $500.000!</p>
+      <a href="registro.html" class="btn">Regístrate y Gana</a>
+    </div>
+  </div>
+
+  <div id="eventos" class="eventos">
+    
+  </div>
+
+  <div id="myModal" class="modal">
+    <div class="modal-content" id="modalContent"></div>
+  </div>
+
+  <section class="apuestas-live">
+    <h2>Apuestas en Vivo</h2>
+    <div class="live-contenido">
+        <div class="live-item">
+            <div class="component-img">
+                <img src="imagenes/Millonarios_vs_Nacional.jpg" alt="Fútbol en Vivo">
+                <div class="live-badge">EN VIVO</div>
+            </div>
+            <div class="contenido">
+                <h3>Liga PlayExpert</h3>
+                <p>Sigue el partido en tiempo real y apuesta mientras se desarrolla la acción. Millonarios vs Nacional.</p>
+                <a href="#" class="btn">Apuesta Ahora</a>
+            </div>
+        </div>
+        
+        <div class="live-item">
+            <div class="component-img">
+                <img src="imagenes/Warriors_vs_Lakers_envivo.jpg" alt="Baloncesto en Vivo">
+                <div class="live-badge">EN VIVO</div>
+            </div>
+            <div class="contenido">
+                <h3>NBA Basketball</h3>
+                <p>No te pierdas la emocionante temporada de la NBA. Apuesta en vivo con las mejores cuotas.</p>
+                <a href="#" class="btn">Apuesta Ahora</a>
+            </div>
+        </div>
+        
+        <div class="live-item">
+            <div class="component-img">
+                <img src="imagenes/Power_Arregoces_vs_U_Católica.jpg" alt="Voleibol en Vivo">
+                <div class="live-badge">EN VIVO</div>
+            </div>
+            <div class="contenido">
+                <h3>Clásico Sudamericano de Clubes</h3>
+                <p>Sigue la acción punto a punto. Apuesta en directo al ganador del set o del partido. **Power Arregoces vs. U. Católica**</p> 
+                <a href="#" class="btn">Apuesta Ahora</a>
+            </div>
+        </div>
+        
+        <div class="live-item">
+            <div class="component-img">
+                <img src="Grand_Slam_Tenis.jpg" alt="Tenis en Vivo">
+                <div class="live-badge">EN VIVO</div>
+            </div>
+            <div class="contenido">
+                <h3>US Open - Cuartos de Final</h3>
+                <p>Apuesta al próximo juego, al ganador del set o al resultado final del partido.</p>
+                <p>**Alcaraz vs. Sinner**</p> 
+                <a href="#" class="btn">Apuesta Ahora</a>
+            </div>
+        </div>
+        </div>
+</section>
+
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="logo-social">
+        <img src="imagenes/logo.png" alt="PlayExpert Logo" class="logo">
+        <div class="logo-text" style="font-size: 1.5rem;">PlayExpert</div>
+        <p>¡Síguenos!</p>
+        <div class="redes-sociales">
+          <a href="https://www.facebook.com" target="_blank">
+            <img src="imagenes/Facebook_Logo_2023.png " alt="Facebook">
+          </a>
+          <a href="https://twitter.com" target="_blank">
+            <img src="imagenes/Logo_of_Twitter.svg.png" alt="Twitter">
+          </a>
+          <a href="https://www.instagram.com/playexpert_?igsh=MTFqOWw1OGVybW9kZg==" target="_blank">
+            <img src="imagenes/Instagram-Icon.png" alt="Instagram">
+          </a>
+        </div>
+      </div>
+      <div class="newsletter">
+        <h2>¿Buscas Ofertas Exclusivas?</h2>
+        <p>Suscríbete para recibir promociones especiales en tu correo.</p>
+        <div class="subscribe">
+          <input type="email" placeholder="correo@mail.com">
+          <button>Suscribirme</button>
+        </div>
+      </div>
+    </div>
+  
+    <div class="footer-links">
+      <div>
+        <h3>Deportes</h3>
+        <p>Fútbol</p>
+        <p>Baloncesto</p>
+        <p>Tenis</p>
+        <p>Boxeo</p>
+      </div>
+      <div>
+        <h3>Apuestas</h3>
+        <p>Apuestas en Vivo</p>
+        <p>Apuestas Virtuales</p>
+        <p>Promociones</p>
+        <p>Resultados</p>
+      </div>
+      <div>
+        <h3>Soporte</h3>
+        <p>Ayuda</p>
+        <p>Preguntas Frecuentes</p>
+        <p>Contacto</p>
+        <p>Juego Responsable</p>
+      </div>
+    </div>
+  
+    <div class="footer-bottom">
+      <p>© 2025 PlayExpert Colombia. Juego responsable. Prohibida la participación de menores de edad.</p>
+    </div>
+  </footer>
+
+  <div id="chatbot-button" onclick="toggleChat()">
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712100.png" alt="Chatbot" />
+  </div>
+
+  <div id="chatbot-container" onclick="event.stopPropagation()">
+    <div id="chatbot-header">
+      <span>🤖 Asistente PlayExpert</span>
+      <button id="close-btn" onclick="toggleChat()">❌</button>
+    </div>
+    <div id="chatbot-body">
+      <p id="welcome-text">Cargando asistente...</p>
+      <ul>
+        <li><a href="registro.html">🎁 Bono de Bienvenida</a></li>
+        <li><a href="apuestas_live.html">⚽ Apuestas Deportivas</a></li>
+        <li><a href="promociones.html">💰 Promociones Activas</a></li>
+        <li><a href="soporte.html">📞 Soporte 24/7</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+
+    const menuButton = document.getElementById('menu-button');
+    const menu = document.querySelector('.nav');
+
+    menuButton.addEventListener('click', () => {
+      menu.classList.toggle('menu_visible');
+    });
+
+  
+    let lastScrollTop = 0;
+    const header = document.querySelector('.header');
+
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+      if (scrollTop > lastScrollTop) {
+        header.style.top = '-100px';
+      } else {
+        header.style.top = '0';
+      }
+
+      lastScrollTop = scrollTop;
+    });
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const nav = document.querySelector("#nav-principal ul");
+      const usuarioActivo = JSON.parse(localStorage.getItem("usuarioActivo"));
+
+      const nuevoLi = document.createElement("li");
+
+      if (usuarioActivo) {
+
+        nuevoLi.innerHTML = `
+          <span style="color:#f5c542; font-weight:bold;">Hola, ${usuarioActivo.nombre.split(" ")[0]}</span>
+          <button id="cerrarSesion" style="margin-left: 10px; background:#f5c542; color:#00205b; border:none; padding:8px 15px; border-radius:20px; cursor:pointer; font-weight:bold;">
+            Cerrar sesión
+          </button>
+        `;
+      } else {
+ 
+   
+      }
+
+      nav.appendChild(nuevoLi);
+
+
+      const btnCerrar = document.getElementById("cerrarSesion");
+      if (btnCerrar) {
+        btnCerrar.addEventListener("click", () => {
+          localStorage.removeItem("usuarioActivo");
+          window.location.href = "iniciosesion.html";
+        });
+      }
+
+
+      cargarEventos();
+    });
+
+
+    function toggleChat() {
+      const chatbot = document.getElementById('chatbot-container');
+      const welcome = document.getElementById('welcome-text');
+
+      if (chatbot.style.display === 'block') {
+        chatbot.style.display = 'none';
+      } else {
+        chatbot.style.display = 'block';
+        welcome.innerText = "Hola, soy tu asistente de apuestas";
+      }
+    }
+
+    document.addEventListener('click', function (e) {
+      const chatbot = document.getElementById('chatbot-container');
+      const button = document.getElementById('chatbot-button');
+      if (!chatbot.contains(e.target) && !button.contains(e.target)) {
+        chatbot.style.display = 'none';
+      }
+    });
+
+ 
+    function cargarEventos() {
+      const eventos = [
+        {
+          equipo1: "Real Madrid",
+          equipo2: "Barcelona",
+          cuota1: 2.10,
+          cuotaEmpate: 3.25,
+          cuota2: 3.50,
+          imagen: "imagenes/realmadrir_vs_barcelona.jpg"
+        },
+        {
+          equipo1: "Brasil",
+          equipo2: "Colombia",
+          cuota1: 1.75,
+          cuotaEmpate: 3.40,
+          cuota2: 4.50,
+          imagen: "imagenes/colombia_vs_brasil.jpg"
+        },
+        {
+          equipo1: "Lakers",
+          equipo2: "Warriors",
+          cuota1: 1.90,
+          cuotaEmpate: null,
+          cuota2: 1.95,
+          imagen: "imagenes/Warriors_vs_Lakers.jpg"
+        }
+      ];
+
+      const eventosContainer = document.getElementById('eventos');
+      
+      eventos.forEach(evento => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        
+        card.innerHTML = `
+          <div class="component-img">
+            <img src="${evento.imagen}" alt="${evento.equipo1} vs ${evento.equipo2}" class="imagen-card">
+            <div class="name-card-float">${evento.equipo1} vs ${evento.equipo2}</div>
+          </div>
+          <div class="cuotas">
+            <div class="cuota">
+              <div>${evento.equipo1}</div>
+              <div class="cuota-valor">${evento.cuota1}</div>
+            </div>
+            ${evento.cuotaEmpate ? `
+            <div class="cuota">
+              <div>Empate</div>
+              <div class="cuota-valor">${evento.cuotaEmpate}</div>
+            </div>
+            ` : ''}
+            <div class="cuota">
+              <div>${evento.equipo2}</div>
+              <div class="cuota-valor">${evento.cuota2}</div>
+            </div>
+          </div>
+        `;
+        
+        eventosContainer.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>

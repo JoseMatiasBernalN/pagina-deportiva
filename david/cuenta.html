@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>PlayExpert - Mi Cuenta</title>
+  <link rel="stylesheet" href="estilo_inicio_registro.css">
+  <style>
+    header { display: flex; justify-content: space-between; align-items: center; padding: 15px 30px; background-color: #1a1a1a; color: white; }
+    nav a { color: white; text-decoration: none; margin: 0 10px; font-weight: bold; }
+    .botones-accion { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+    .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; color: white; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>PlayExpert</h1>
+    <nav>
+      <a href="live.html">Inicio</a>
+      <a href="juegos.html">Juegos</a>
+      <a href="apuestas_live.html">Apuestas</a>
+      <a href="Futbol.html">Jugadores</a>
+      <a id="btnAdmin" href="admin.html" style="display: none; background-color: #e74c3c; padding: 6px 12px; border-radius: 4px;">Panel Admin</a>
+      <button id="btnCerrarSesion" style="background-color: #333; color: white; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer;">Cerrar Sesión</button>
+    </nav>
+  </header>
+
+  <main class="registro-container">
+    <div class="card-registro">
+      <h2>Perfil de Usuario</h2>
+      <div id="infoUsuario" style="margin-top: 20px;">
+        <p><strong>Nombre:</strong> <span id="lblNombre">Cargando...</span></p>
+        <p><strong>Correo:</strong> <span id="lblCorreo">Cargando...</span></p>
+        <p><strong>Saldo Actual:</strong> $<span id="lblSaldo">0</span></p>
+      </div>
+
+      <!-- Tus botones originales recuperados -->
+      <div class="botones-accion">
+        <a href="depositar.html" class="btn" style="background-color: #27ae60;">Depositar</a>
+        <a href="retirar.html" class="btn" style="background-color: #2980b9;">Retirar</a>
+        <a href="historial.html" class="btn" style="background-color: #f39c12;">Historial</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Validar sesión
+      if (localStorage.getItem('sesion_activa') !== 'true') {
+        window.location.href = 'iniciosesion.html';
+        return;
+      }
+
+      // Cargar datos
+      document.getElementById('lblNombre').textContent = localStorage.getItem('usuario_nombre');
+      document.getElementById('lblCorreo').textContent = localStorage.getItem('usuario_correo');
+      document.getElementById('lblSaldo').textContent = localStorage.getItem('usuario_saldo');
+
+      // Mostrar Admin si corresponde
+      if (localStorage.getItem('es_admin') === 'true') {
+        document.getElementById('btnAdmin').style.display = 'inline-block';
+      }
+
+      // Cerrar Sesión
+      document.getElementById('btnCerrarSesion').addEventListener('click', () => {
+        localStorage.clear();
+        window.location.href = 'iniciosesion.html';
+      });
+    });
+  </script>
+</body>
+</html>

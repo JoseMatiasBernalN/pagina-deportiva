@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayExpert - Historial de Movimientos</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=menu" />
+  <link rel="stylesheet" href="estilo.css">
+  <style>
+    .item-historial {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95rem;
+    }
+    .monto-ganada {
+      color: #16a34a;
+      font-weight: bold;
+    }
+    .monto-perdida {
+      color: #dc2626;
+      font-weight: bold;
+    }
+    .sin-movimientos {
+      text-align: center;
+      color: #666;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <button class="menu-toggle" id="menu-button">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <div class="logo">
+      <img src="imagenes/logo.png" alt="PlayExpert Logo">
+      <div class="logo-text">PlayExpert</div>
+    </div>
+    <nav id="nav-principal" class="nav">
+      <ul> 
+        <h3><li><a href="juegos.html">juegos</a></li></h3>
+        <h3><li><a href="live.html">Apuestas en Vivo</a></li></h3>
+        <h3><li><a href="Futbol.html">Jugadores</a></li></h3>
+        <h3><li><a href="cuenta.html">Mi Cuenta</a></li></h3>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="contenedor-deposito">
+    <section class="panel-deposito">
+      <h2 class="titulo-seccion">Historial de Movimientos</h2>
+
+      <div id="listaHistorial" style="margin-bottom: 20px;">
+        <!-- Se llena dinámicamente con Firebase -->
+      </div>
+
+      <a href="cuenta.html" class="btn-regresar">Volver a Mi Cuenta</a>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-9Bb0Z46mMW9kae7_7WD2j0E_S0pDxB8",
+      authDomain: "playexpert.firebaseapp.com",
+      projectId: "playexpert",
+      storageBucket: "playexpert.firebasestorage.app",
+      messagingSenderId: "2187644623",
+      appId: "1:2187644623:web:361a8220c3a86fad9231ba",
+      measurementId: "G-RYEMRYNFJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const menuButton = document.getElementById('menu-button');
+    const navPrincipal = document.getElementById('nav-principal');
+
+    if (menuButton && navPrincipal) {
+      menuButton.addEventListener('click', () => {
+        navPrincipal.classList.toggle('active');
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      const sesionActiva = localStorage.getItem('sesion_activa');
+      if (sesionActiva !== 'true') {
+        window.location.href = 'iniciosesion.html';
+        return;
+      }
+
+      const usuarioId = localStorage.getItem('usuario_id');
+      const contenedor = document.getElementById('listaHistorial');
+      contenedor.innerHTML = '<p class="sin-movimientos">Cargando historial privado...</p>';
+
+      try {
+        const q = query(collection(db, "historial_apuestas"), where("usuarioId", "==", usuarioId));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          contenedor.innerHTML = '<p class="sin-movimientos">No tienes movimientos registrados aún.</p>';
+          return;
+        }
+
+        let htmlContent = '';
+        querySnapshot.forEach((doc) => {
+          const item = doc.data();
+          
+          // Si el valor incluye '+', se pinta verde (ganada/depósito). Si incluye '-', rojo (perdida/retiro/apuesta).
+          const esPositivo = item.valor && item.valor.includes('+');
+          const claseColor = esPositivo ? 'monto-ganada' : 'monto-perdida';
+
+          htmlContent += `
+            <div class="item-historial">
+              <div>
+                <strong>${item.descripcion}</strong><br>
+                <small style="color: #666;">${item.detalle || ''} - ${item.fecha}</small>
+              </div>
+              <span class="${claseColor}">${item.valor}</span>
+            </div>
+          `;
+        });
+
+        contenedor.innerHTML = htmlContent;
+
+      } catch (error) {
+        console.error("Error al cargar el historial:", error);
+        contenedor.innerHTML = '<p class="sin-movimientos" style="color: red;">Hubo un error al cargar tu historial.</p>';
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayExpert - Apuestas en Vivo</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+  <header class="header">
+    <button class="menu-toggle" id="menu-button">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <div class="logo">
+      <img src="imagenes/logo.png" alt="PlayExpert Logo">
+      <div class="logo-text">PlayExpert</div>
+    </div>
+    <nav id="nav-principal" class="nav">
+      <ul>
+        <li><a href="deportes.html">Deportes</a></li>
+        <li><a href="" class="activo">Apuestas en Vivo</a></li>
+        <li><a href="futbol.html">Jugadores</a></li>
+        <li><a href="cuenta.html">Mi Cuenta</a></li>
+        <li><a href="juegos.html">Juegos</a></li>
+      </ul>
+    </nav>
+    <div class="contenedor-usuario" id="bloqueUsuario"></div>
+  </header>
+
+  <main class="contenedor-apuestas">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 class="titulo-pagina" style="margin: 0;">Apuestas en Vivo</h2>
+      <span style="font-weight: bold; font-size: 1.1rem; color: #4ade80;">Saldo Disponible: <span id="saldoJuego">$0 COP</span></span>
+    </div>
+    <div class="grid-partidos" id="panelPartidos">
+      <!-- Se llenará dinámicamente desde Firebase -->
+    </div>
+  </main>
+
+  <!-- Script de Firebase y lógica de apuestas corregida -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, updateDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-9Bb0Z46mMW9kae7_7WD2j0E_S0pDxB8",
+      authDomain: "playexpert.firebaseapp.com",
+      projectId: "playexpert",
+      storageBucket: "playexpert.firebasestorage.app",
+      messagingSenderId: "2187644623",
+      appId: "1:2187644623:web:361a8220c3a86fad9231ba",
+      measurementId: "G-RYEMRYNFJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Inicializar saldo en pantalla al cargar
+    function actualizarVistaSaldo() {
+      const saldoActual = localStorage.getItem('usuario_saldo') || 0;
+      const lbl = document.getElementById('saldoJuego');
+      if(lbl) lbl.textContent = `$${parseInt(saldoActual).toLocaleString('es-CO')} COP`;
+    }
+    actualizarVistaSaldo();
+
+    // Cargar partidos en vivo desde la base de datos de Firebase
+    async function cargarPartidosEnVivo() {
+      const panel = document.getElementById('panelPartidos');
+      panel.innerHTML = '<p style="color: white; text-align: center; grid-column: 1 / -1;">Cargando partidos en vivo...</p>';
+
+      try {
+        const querySnapshot = await getDocs(collection(db, "partidos"));
+        panel.innerHTML = '';
+
+        if (querySnapshot.empty) {
+          panel.innerHTML = '<p style="color: white; text-align: center; grid-column: 1 / -1; padding: 20px;">No hay partidos en vivo disponibles en este momento.</p>';
+          return;
+        }
+
+        querySnapshot.forEach((documento) => {
+          const p = documento.data();
+          const tarjeta = document.createElement('div');
+          tarjeta.className = 'tarjeta-partido';
+          
+          // Solo mostramos partidos activos que no estén finalizados
+          if (p.estado === 'finalizado') return;
+
+          tarjeta.innerHTML = `
+            <div class="info-evento">
+              <span class="badge-en-vivo">En Vivo</span>
+              <span style="color: #bdbbbb;">ID: #${documento.id.substring(0, 5)}</span>
+            </div>
+            <div class="equipos">${p.local} vs ${p.visitante}</div>
+            <div class="opciones-cuotas">
+              <button class="btn-apostar-cuota" onclick="registrarJugada('${documento.id}', '${p.local}', ${p.cLocal}, '${p.local} vs ${p.visitante}')">
+                <span>Local</span><span class="valor-cuota">${parseFloat(p.cLocal).toFixed(2)}</span>
+              </button>
+              <button class="btn-apostar-cuota" onclick="registrarJugada('${documento.id}', 'Empate', ${p.cEmpate}, '${p.local} vs ${p.visitante}')">
+                <span>Empate</span><span class="valor-cuota">${parseFloat(p.cEmpate).toFixed(2)}</span>
+              </button>
+              <button class="btn-apostar-cuota" onclick="registrarJugada('${documento.id}', '${p.visitante}', ${p.cVisitante}, '${p.local} vs ${p.visitante}')">
+                <span>Visita</span><span class="valor-cuota">${parseFloat(p.cVisitante).toFixed(2)}</span>
+              </button>
+            </div>
+          `;
+          panel.appendChild(tarjeta);
+        });
+      } catch (error) {
+        console.error("Error al cargar partidos de Firebase:", error);
+        panel.innerHTML = '<p style="color: red; text-align: center; grid-column: 1 / -1;">Error al cargar los partidos.</p>';
+      }
+    }
+
+    cargarPartidosEnVivo();
+
+    // Función global para procesar el saldo y actualizar Firebase
+    window.procesarResultadoJuego = async function(montoGanadoOPerdido) {
+      let saldoActual = parseInt(localStorage.getItem('usuario_saldo') || 0);
+      let nuevoSaldo = saldoActual + montoGanadoOPerdido;
+      
+      localStorage.setItem('usuario_saldo', nuevoSaldo);
+      
+      const etiquetaSaldo = document.getElementById('saldoJuego');
+      if (etiquetaSaldo) {
+        etiquetaSaldo.textContent = `$${nuevoSaldo.toLocaleString('es-CO')} COP`;
+      }
+
+      const usuarioId = localStorage.getItem('usuario_id');
+      if (usuarioId) {
+        try {
+          const usuarioRef = doc(db, "usuarios", usuarioId);
+          await updateDoc(usuarioRef, { saldo: nuevoSaldo });
+        } catch (error) {
+          console.error("Error al actualizar el saldo en Firebase:", error);
+        }
+      }
+    };
+
+    // Registrar jugada guardando el partidoId y la selección exacta para el Administrador
+    window.registrarJugada = async function(partidoId, seleccion, cuota, partido) {
+      if (localStorage.getItem('sesion_activa') !== 'true') {
+        alert('Debes iniciar sesión para apostar.');
+        window.location.href = 'iniciosesion.html';
+        return;
+      }
+
+      const cantidad = prompt(`¿Monto a apostar por [${seleccion}]? (Mínimo $5.000 COP)`);
+      if (!cantidad) return;
+      
+      const valor = parseInt(cantidad);
+      let saldo = parseInt(localStorage.getItem('usuario_saldo') || 0);
+
+      if (isNaN(valor) || valor < 5000 || valor > saldo) {
+        alert('Monto inválido o saldo insuficiente.');
+        return;
+      }
+
+      const usuarioId = localStorage.getItem('usuario_id');
+
+      try {
+        // Guardamos los campos clave exactos (partidoId y seleccion) que el Admin necesita para liquidar
+        await addDoc(collection(db, "historial_apuestas"), {
+          usuarioId: usuarioId,
+          partidoId: partidoId,             // <--- ¡Crucial para que el admin encuentre la apuesta!
+          seleccion: seleccion,             // <--- ¡Crucial para comparar si ganó o perdió ('Local', 'Empate' o Visitante)!
+          descripcion: `Apuesta: ${partido}`,
+          detalle: `${seleccion} @ ${cuota}`,
+          valor: `- $${valor.toLocaleString('es-CO')}`,
+          numValor: valor,
+          fecha: new Date().toLocaleDateString(),
+          estado: "pendiente",              // <--- Inicia pendiente hasta que el admin liquide
+          timestamp: new Date()
+        });
+
+        // Descuenta el saldo local y en la base de datos del usuario
+        window.procesarResultadoJuego(-valor);
+
+        alert('¡Apuesta registrada con éxito y vinculada a la nube!');
+      } catch (error) {
+        console.error("Error al guardar el historial en Firebase:", error);
+        alert('Hubo un error al registrar la apuesta en la nube.');
+      }
+    }
+
+    function controlarEncabezado() {
+      const bloque = document.getElementById('bloqueUsuario');
+      if (localStorage.getItem('sesion_activa') === 'true') {
+        bloque.innerHTML = `<span>Hola, ${localStorage.getItem('usuario_nombre')}</span>
+        <button class="btn-cerrar-sesion" onclick="localStorage.setItem('sesion_activa','false'); window.location.reload();">Salir</button>`;
+      }
+    }
+
+    controlarEncabezado();
+  </script>
+</body>
+</html>

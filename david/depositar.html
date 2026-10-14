@@ -1,0 +1,263 @@
+ <!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayExpert - Depositar Fondos</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=menu" />
+  <link rel="stylesheet" href="estilo.css">
+  <style>
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(3px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-pasarela {
+      background-color: #ffffff;
+      color: #111;
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+    .modal-pasarela h3 {
+      color: #003366;
+      margin-bottom: 15px;
+    }
+    .modal-pasarela input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0 15px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      outline: none;
+    }
+    .modal-botones {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+    }
+    .btn-modal-confirmar {
+      background-color: #16a34a;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      flex: 1;
+    }
+    .btn-modal-cancelar {
+      background-color: #dc2626;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <button class="menu-toggle" id="menu-button">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <div class="logo">
+      <img src="imagenes/logo.png" alt="PlayExpert Logo">
+      <div class="logo-text">PlayExpert</div>
+    </div>
+    <nav id="nav-principal" class="nav">
+      <ul> 
+        <h3><li><a href="deportes.html">Deportes</a></li></h3>
+        <h3><li><a href="live.html">Apuestas en Vivo</a></li></h3>
+        <h3><li><a href="jugadores.html">Jugadores</a></li></h3>
+        <h3><li><a href="cuenta.html">Mi Cuenta</a></li></h3>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="contenedor-deposito">
+    <section class="panel-deposito">
+      <h2 class="titulo-seccion">Depositar Fondos</h2>
+      
+      <div class="saldo-actual">
+        <span>Tu Saldo Actual</span>
+        <strong id="saldoTexto">$0 COP</strong>
+      </div>
+
+      <form id="depositoForm">
+        <div class="grupo-formulario">
+          <label for="metodo">Método de Pago:</label>
+          <select id="metodo" required>
+            <option value="" disabled selected>Selecciona una opción</option>
+            <option value="PSE">PSE / Cuenta de Ahorros</option>
+            <option value="Nequi">Nequi</option>
+            <option value="Daviplata">Daviplata</option>
+            <option value="Tarjeta">Tarjeta de Crédito</option>
+          </select>
+        </div>
+
+        <div class="grupo-formulario">
+          <label for="monto">Monto a Depositar (COP):</label>
+          <input type="number" id="monto" min="10000" placeholder="Mínimo $10.000" required>
+        </div>
+
+        <button type="submit" class="btn-depositar">Continuar con el Pago</button>
+      </form>
+
+      <a href="cuenta.html" class="btn-regresar">Volver a Mi Cuenta</a>
+    </section>
+  </main>
+
+  <div class="modal-overlay" id="modalPasarela">
+    <div class="modal-pasarela">
+      <h3 id="modalTitulo">Simulación de Pago</h3>
+      <p id="modalDescripcion" style="font-size: 0.9rem; color: #555; margin-bottom: 10px;"></p>
+      <div id="contenedorInputModal"></div>
+      <div class="modal-botones">
+        <button type="button" class="btn-modal-cancelar" id="btnCancelarPago">Cancelar</button>
+        <button type="button" class="btn-modal-confirmar" id="btnConfirmarPago">Autorizar Pago</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-9Bb0Z46mMW9kae7_7WD2j0E_S0pDxB8",
+      authDomain: "playexpert.firebaseapp.com",
+      projectId: "playexpert",
+      storageBucket: "playexpert.firebasestorage.app",
+      messagingSenderId: "2187644623",
+      appId: "1:2187644623:web:361a8220c3a86fad9231ba",
+      measurementId: "G-RYEMRYNFJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const menuButton = document.getElementById('menu-button');
+    const navPrincipal = document.getElementById('nav-principal');
+
+    if (menuButton && navPrincipal) {
+      menuButton.addEventListener('click', () => {
+        navPrincipal.classList.toggle('active');
+      });
+    }
+
+    let montoGlobal = 0;
+    let metodoGlobal = '';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const sesionActiva = localStorage.getItem('sesion_activa');
+      if (sesionActiva !== 'true') {
+        window.location.href = 'iniciosesion.html';
+        return;
+      }
+
+      let saldoActual = localStorage.getItem('usuario_saldo');
+      if (saldoActual === null) {
+        saldoActual = '50000';
+        localStorage.setItem('usuario_saldo', saldoActual);
+      }
+
+      document.getElementById('saldoTexto').textContent = '$' + parseInt(saldoActual).toLocaleString('es-CO') + ' COP';
+    });
+
+    document.getElementById('depositoForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      montoGlobal = parseInt(document.getElementById('monto').value);
+      metodoGlobal = document.getElementById('metodo').value;
+      
+      if (isNaN(montoGlobal) || montoGlobal < 10000) {
+        alert('El monto mínimo de depósito es $10.000 COP');
+        return;
+      }
+
+      const modalTitulo = document.getElementById('modalTitulo');
+      const modalDesc = document.getElementById('modalDescripcion');
+      const contenedorInput = document.getElementById('contenedorInputModal');
+
+      if (metodoGlobal === 'Nequi' || metodoGlobal === 'Daviplata') {
+        modalTitulo.textContent = `Pago seguro con ${metodoGlobal}`;
+        modalDesc.textContent = `Se enviará una notificación PUSH a tu celular registrado. O ingresa tu número:`;
+        contenedorInput.innerHTML = `<input type="tel" id="datoPago" placeholder="Número de celular (Ej: 3001234567)" required>`;
+      } else if (metodoGlobal === 'PSE') {
+        modalTitulo.textContent = `Pasarela PSE`;
+        modalDesc.textContent = `Estableciendo conexión segura con tu entidad bancaria seleccionada.`;
+        contenedorInput.innerHTML = `<input type="text" id="datoPago" placeholder="NIT o Cédula del titular" required>`;
+      } else {
+        modalTitulo.textContent = `Pago con Tarjeta`;
+        modalDesc.textContent = `Ingresa los últimos 4 dígitos de tu tarjeta:`;
+        contenedorInput.innerHTML = `<input type="password" id="datoPago" maxlength="4" placeholder="••••" required>`;
+      }
+
+      document.getElementById('modalPasarela').style.display = 'flex';
+    });
+
+    document.getElementById('btnCancelarPago').addEventListener('click', function() {
+      document.getElementById('modalPasarela').style.display = 'none';
+    });
+
+    document.getElementById('btnConfirmarPago').addEventListener('click', async function() {
+      const datoInput = document.getElementById('datoPago').value;
+      if (!datoInput) {
+        alert('Por favor completa los datos solicitados en la pasarela.');
+        return;
+      }
+
+      let saldoActual = parseInt(localStorage.getItem('usuario_saldo') || '50000');
+      let nuevoSaldo = saldoActual + montoGlobal;
+      localStorage.setItem('usuario_saldo', nuevoSaldo.toString());
+
+      const usuarioId = localStorage.getItem('usuario_id');
+
+      try {
+        // Actualizar saldo en la colección de usuarios en Firebase si existe
+        if (usuarioId) {
+          const usuarioRef = doc(db, "usuarios", usuarioId);
+          await updateDoc(usuarioRef, { saldo: nuevoSaldo });
+        }
+
+        // Guardar el depósito en la colección privada de historial
+        await addDoc(collection(db, "historial_apuestas"), {
+          usuarioId: usuarioId,
+          descripcion: `Depósito aprobado vía ${metodoGlobal}`,
+          detalle: `Método: ${metodoGlobal}`,
+          valor: `+ $${montoGlobal.toLocaleString('es-CO')}`,
+          numValor: montoGlobal,
+          tipo: 'ganada',
+          fecha: new Date().toLocaleDateString(),
+          timestamp: new Date()
+        });
+
+        document.getElementById('modalPasarela').style.display = 'none';
+        alert(`¡Transacción aprobada! Se han acreditado $${montoGlobal.toLocaleString('es-CO')} COP a tu cuenta.`);
+        window.location.href = 'cuenta.html';
+
+      } catch (error) {
+        console.error("Error al procesar el depósito en Firebase:", error);
+        alert("Error al registrar el depósito en la base de datos.");
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayExpert - Panel de Administración</title>
+  <link rel="stylesheet" href="estilo_inicio_registro.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Estilos para el Modal de Historial de Usuario */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7); z-index: 1000; justify-content: center; align-items: center; padding: 15px; }
+    .modal-content { background: white; border-radius: 8px; max-width: 650px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative; }
+    .close-modal { position: absolute; top: 15px; right: 15px; font-size: 1.2rem; cursor: pointer; color: #64748b; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <h1>PlayExpert <span id="spanRolTitulo" style="font-size: 1rem; color: #4da6ff;">[Admin]</span></h1>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="admin.html" style="color: #4da6ff;">Panel Principal</a></li>
+        <li><a href="#" id="btn_cerrar_sesion">Cerrar Sesión</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="registro-container" style="max-width: 800px;">
+    <div class="card-registro" style="max-width: 100%; text-align: left;">
+      <h2><i class="fas fa-tools"></i> Panel de Control</h2>
+      <p class="subtitulo">Bienvenido al centro de gestión de PlayExpert.</p>
+
+      <!-- Panel Financiero (Solo visible para el Administrador) -->
+      <div id="panelFinanciero" style="display: none; background: #064e3b; color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+        <span style="font-size: 0.85rem; opacity: 0.9;"><i class="fas fa-wallet"></i> Saldo Total de la Empresa</span>
+        <h2 id="displaySaldoEmpresa" style="font-size: 1.6rem; margin-top: 5px; color: #4ade80;">$ 0</h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px;">
+        <div style="background-color: #003366; color: white; padding: 15px; border-radius: 8px; text-align: center;">
+          <span style="font-size: 0.85rem; opacity: 0.9;">Estado del Sistema</span>
+          <h3 style="font-size: 1.4rem; margin-top: 5px; color: #16a34a;">🟢 Operativo</h3>
+        </div>
+        <div style="background-color: #003366; color: white; padding: 15px; border-radius: 8px; text-align: center;">
+          <span style="font-size: 0.85rem; opacity: 0.9;">Rol Actual</span>
+          <h3 id="textoRolActual" style="font-size: 1.4rem; margin-top: 5px; color: #4da6ff;">Verificando...</h3>
+        </div>
+      </div>
+
+      <h3 style="margin-bottom: 15px; color: #333;"><i class="fas fa-cogs"></i> Acciones Disponibles</h3>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px;">
+        <button class="btn-submit" style="background-color: #2563eb; text-align: left;" onclick="toggleSeccion('seccionCrearPartido')">
+          <i class="fas fa-plus-circle" style="margin-right: 8px;"></i> Agregar Nuevo Partido
+        </button>
+        <button class="btn-submit" style="background-color: #475569; text-align: left;" onclick="toggleSeccion('seccionVerPartidos')">
+          <i class="fas fa-futbol" style="margin-right: 8px;"></i> Ver / Gestionar Partidos en Vivo y Resultados
+        </button>
+        <button class="btn-submit" style="background-color: #d97706; text-align: left;" onclick="toggleSeccion('seccionGestionUsuarios')">
+          <i class="fas fa-users-cog" style="margin-right: 8px;"></i> Gestionar Usuarios y Cuentas
+        </button>
+        <!-- Botón exclusivo para Historial de la Empresa -->
+        <button id="btnMenuHistorialEmpresa" class="btn-submit" style="background-color: #047857; text-align: left; display: none;" onclick="toggleSeccion('seccionHistorialEmpresa')">
+          <i class="fas fa-file-invoice-dollar" style="margin-right: 8px;"></i> Historial Financiero de la Empresa
+        </button>
+      </div>
+
+      <!-- Sección Crear Partido -->
+      <div id="seccionCrearPartido" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+        <h4 style="margin-bottom: 15px; color: #1e293b;"><i class="fas fa-plus-circle"></i> Publicar Nuevo Partido</h4>
+        <form id="formCrearPartido" style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; gap: 10px;">
+            <input type="text" id="equipoLocal" placeholder="Equipo Local (ej. Millonarios)" required style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            <input type="text" id="equipoVisitante" placeholder="Equipo Visitante (ej. Santa Fe)" required style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <input type="number" step="0.01" id="cuotaLocal" placeholder="Cuota Local" required style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            <input type="number" step="0.01" id="cuotaEmpate" placeholder="Cuota Empate" required style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            <input type="number" step="0.01" id="cuotaVisitante" placeholder="Cuota Visitante" required style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+          </div>
+          <button type="submit" class="btn-submit" style="background-color: #16a34a;">Guardar y Publicar en la Nube</button>
+        </form>
+      </div>
+
+      <!-- Sección Ver / Gestionar Partidos y Resultados -->
+      <div id="seccionVerPartidos" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+        <h4 style="margin-bottom: 15px; color: #1e293b;"><i class="fas fa-list"></i> Gestión de Partidos y Resultados</h4>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Selecciona el resultado final del encuentro para liquidar las apuestas de los usuarios automáticamente y eliminar el partido.</p>
+        <div id="listaPartidosAdmin" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;"></div>
+      </div>
+
+      <!-- Sección Gestión de Usuarios -->
+      <div id="seccionGestionUsuarios" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+        <h4 style="margin-bottom: 15px; color: #1e293b;"><i class="fas fa-users"></i> Directorio de Usuarios</h4>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Bloquea cuentas sospechosas o haz clic en "Ver Apuestas" para auditar y cancelar apuestas individuales si es necesario.</p>
+        <div id="listaUsuariosAdmin" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;"></div>
+      </div>
+
+      <!-- Sección Historial Financiero de la Empresa (Solo Admin) -->
+      <div id="seccionHistorialEmpresa" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+        <h4 style="margin-bottom: 15px; color: #1e293b;"><i class="fas fa-file-invoice-dollar"></i> Registro de Ingresos y Egresos</h4>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;">Detalle de transacciones generadas por la liquidación de apuestas (Apuestas perdidas vs. Premios pagados).</p>
+        <div id="listaHistorialEmpresa" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;"></div>
+      </div>
+
+      <button id="btn_salir_abajo" class="btn-submit" style="background-color: #dc2626;">Cerrar Sesión</button>
+    </div>
+  </main>
+
+  <!-- Modal Detalle e Historial de Apuestas de Usuario -->
+  <div id="modalDetalleUsuario" class="modal-overlay">
+    <div class="modal-content">
+      <i class="fas fa-times close-modal" onclick="cerrarModalUsuario()"></i>
+      <h3 id="modalNombreUsuario" style="color: #1e293b; margin-bottom: 5px;">Auditoría de Apuestas</h3>
+      <p id="modalCorreoUsuario" style="font-size: 0.85rem; color: #64748b; margin-bottom: 15px;"></p>
+      <div id="contenedorHistorialUsuarioModal" style="display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto;">
+        Cargando apuestas...
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p style="color: white; font-size: 0.85rem; text-align: center; padding: 10px;">&copy; 2026 PlayExpert. Todos los derechos reservados.</p>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, getDoc, query, where, increment, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-9Bb0Z46mMW9kae7_7WD2j0E_S0pDxB8",
+      authDomain: "playexpert.firebaseapp.com",
+      projectId: "playexpert",
+      storageBucket: "playexpert.firebasestorage.app",
+      messagingSenderId: "2187644623",
+      appId: "1:2187644623:web:361a8220c3a86fad9231ba",
+      measurementId: "G-RYEMRYNFJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const sesionActiva = localStorage.getItem('sesion_activa');
+    const usuarioId = localStorage.getItem('usuario_id');
+
+    if (sesionActiva !== 'true' || !usuarioId) {
+      alert('Acceso restringido: Inicia sesión nuevamente.');
+      window.location.href = 'iniciosesion.html';
+    }
+
+    let rolActual = 'moderador';
+    let nombreAdminActual = 'Staff PlayExpert';
+
+    async function inicializarPanel() {
+      try {
+        const userRef = doc(db, "usuarios", usuarioId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          rolActual = data.rol || 'moderador';
+          nombreAdminActual = data.nombre || (rolActual === 'admin' ? 'Administrador' : 'Moderador');
+        }
+      } catch (error) { console.error("Error al obtener rol:", error); }
+
+      const textoRol = document.getElementById('textoRolActual');
+      const spanTitulo = document.getElementById('spanRolTitulo');
+      const panelFinanciero = document.getElementById('panelFinanciero');
+      const btnMenuHistorialEmpresa = document.getElementById('btnMenuHistorialEmpresa');
+
+      if (rolActual === 'admin') {
+        textoRol.innerText = 'Administrador (Dueño)';
+        textoRol.style.color = '#16a34a';
+        spanTitulo.innerText = '[Dueño]';
+        panelFinanciero.style.display = 'block';
+        if(btnMenuHistorialEmpresa) btnMenuHistorialEmpresa.style.display = 'block';
+        cargarSaldoEmpresa();
+      } else {
+        textoRol.innerText = 'Moderador';
+        textoRol.style.color = '#f59e0b';
+        spanTitulo.innerText = '[Moderador]';
+        panelFinanciero.style.display = 'none';
+        if(btnMenuHistorialEmpresa) btnMenuHistorialEmpresa.style.display = 'none';
+      }
+    }
+
+    inicializarPanel();
+
+    function cerrarSesionAdmin() {
+      localStorage.removeItem('sesion_activa');
+      localStorage.removeItem('es_admin');
+      localStorage.removeItem('usuario_id');
+      window.location.href = 'iniciosesion.html';
+    }
+
+    document.getElementById('btn_cerrar_sesion').addEventListener('click', cerrarSesionAdmin);
+    document.getElementById('btn_salir_abajo').addEventListener('click', cerrarSesionAdmin);
+
+    window.toggleSeccion = function(idSeccion) {
+      document.getElementById('seccionCrearPartido').style.display = 'none';
+      document.getElementById('seccionVerPartidos').style.display = 'none';
+      document.getElementById('seccionGestionUsuarios').style.display = 'none';
+      const secHistorial = document.getElementById('seccionHistorialEmpresa');
+      if(secHistorial) secHistorial.style.display = 'none';
+
+      if (idSeccion === 'seccionCrearPartido') {
+        document.getElementById('seccionCrearPartido').style.display = 'block';
+      } else if (idSeccion === 'seccionVerPartidos') {
+        document.getElementById('seccionVerPartidos').style.display = 'block';
+        cargarPartidosAdmin();
+      } else if (idSeccion === 'seccionGestionUsuarios') {
+        document.getElementById('seccionGestionUsuarios').style.display = 'block';
+        cargarUsuariosAdmin();
+      } else if (idSeccion === 'seccionHistorialEmpresa') {
+        if(secHistorial) secHistorial.style.display = 'block';
+        cargarHistorialEmpresa();
+      }
+    }
+
+    async function cargarSaldoEmpresa() {
+      if (rolActual !== 'admin') return;
+      try {
+        const empresaRef = doc(db, "empresa", "balance");
+        const empresaSnap = await getDoc(empresaRef);
+        let saldoTotal = 0;
+        if (empresaSnap.exists()) {
+          saldoTotal = empresaSnap.data().saldoTotal || 0;
+        } else {
+          await setDoc(empresaRef, { saldoTotal: 0 });
+        }
+        document.getElementById('displaySaldoEmpresa').innerText = `$ ${saldoTotal.toLocaleString('es-CO')}`;
+      } catch (error) { console.error("Error al cargar saldo:", error); }
+    }
+
+    document.getElementById('formCrearPartido').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      try {
+        await addDoc(collection(db, "partidos"), {
+          local: document.getElementById('equipoLocal').value.trim(),
+          visitante: document.getElementById('equipoVisitante').value.trim(),
+          cLocal: parseFloat(document.getElementById('cuotaLocal').value),
+          cEmpate: parseFloat(document.getElementById('cuotaEmpate').value),
+          cVisitante: parseFloat(document.getElementById('cuotaVisitante').value),
+          estado: 'activo',
+          creadoEn: new Date()
+        });
+        alert('¡Partido publicado!');
+        this.reset();
+        toggleSeccion('seccionCrearPartido');
+      } catch (error) { alert('Error al guardar.'); }
+    });
+
+    window.cargarPartidosAdmin = async function() {
+      const contenedor = document.getElementById('listaPartidosAdmin');
+      contenedor.innerHTML = 'Cargando...';
+      try {
+        const querySnapshot = await getDocs(collection(db, "partidos"));
+        contenedor.innerHTML = '';
+        
+        if (querySnapshot.empty) {
+          contenedor.innerHTML = '<p style="color: #666; font-size: 0.9rem;">No hay partidos registrados.</p>';
+          return;
+        }
+
+        for (const documento of querySnapshot.docs) {
+          const p = documento.data();
+          const idPartido = documento.id;
+          const botonEliminar = (rolActual === 'admin') ? `<button onclick="eliminarPartido('${idPartido}')" style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;"><i class="fas fa-trash"></i></button>` : '';
+          
+          const div = document.createElement('div');
+          div.style.cssText = "background: white; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px;";
+          div.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong>${p.local} vs ${p.visitante}</strong> ${botonEliminar}
+            </div>
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+              <button onclick="liquidarPartido('${idPartido}', '${p.local}', ${p.cLocal})" style="flex: 1; background: #16a34a; color: white; border: none; padding: 6px; border-radius: 4px; cursor: pointer;">Ganó L (${p.local})</button>
+              <button onclick="liquidarPartido('${idPartido}', 'Empate', ${p.cEmpate})" style="flex: 1; background: #ca8a04; color: white; border: none; padding: 6px; border-radius: 4px; cursor: pointer;">Empate</button>
+              <button onclick="liquidarPartido('${idPartido}', '${p.visitante}', ${p.cVisitante})" style="flex: 1; background: #2563eb; color: white; border: none; padding: 6px; border-radius: 4px; cursor: pointer;">Ganó V (${p.visitante})</button>
+            </div>
+          `;
+          contenedor.appendChild(div);
+        }
+      } catch (error) { console.error(error); }
+    }
+
+    window.liquidarPartido = async function(idPartido, opcionGanadora, cuota) {
+      if (!confirm(`¿Confirmas que el resultado es "${opcionGanadora}"? Esto liquidará las apuestas, actualizará saldos de usuarios y el balance de la empresa, y eliminará el partido.`)) {
+        return;
+      }
+
+      try {
+        const partidoRef = doc(db, "partidos", idPartido);
+        const partidoSnap = await getDoc(partidoRef);
+        if (!partidoSnap.exists()) {
+          alert("El partido ya no existe.");
+          return;
+        }
+
+        const partidoData = partidoSnap.data();
+        const nombrePartido = `${partidoData.local} vs ${partidoData.visitante}`;
+
+        const q = query(collection(db, "historial_apuestas"), where("partidoId", "==", idPartido));
+        const apuestasSnapshot = await getDocs(q);
+        const empresaRef = doc(db, "empresa", "balance");
+
+        let contadorLiquidadas = 0;
+
+        for (const apuestaDoc of apuestasSnapshot.docs) {
+          const apuesta = apuestaDoc.data();
+          const apuestaRef = doc(db, "historial_apuestas", apuestaDoc.id);
+
+          if (apuesta.estado === 'liquidado' || apuesta.estado === 'cancelado') continue;
+
+          const usuarioIdApostador = apuesta.usuarioId;
+          const montoApostado = apuesta.numValor || 0;
+          const seleccionUsuario = apuesta.seleccion;
+
+          const usuarioRef = doc(db, "usuarios", usuarioIdApostador);
+          const usuarioSnap = await getDoc(usuarioRef);
+
+          if (usuarioSnap.exists()) {
+            let saldoUsuario = usuarioSnap.data().saldo || 0;
+
+            if (seleccionUsuario === opcionGanadora) {
+              let gananciaNeta = Math.round(montoApostado * cuota);
+              saldoUsuario += gananciaNeta;
+
+              await updateDoc(apuestaRef, {
+                estado: 'liquidado',
+                tipo: 'ganada',
+                valor: `+ $${gananciaNeta.toLocaleString('es-CO')}`,
+                descripcion: `Apuesta Ganada: ${nombrePartido}`
+              });
+
+              await updateDoc(empresaRef, { saldoTotal: increment(-gananciaNeta) });
+
+              await addDoc(collection(db, "transacciones_empresa"), {
+                tipo: 'egreso',
+                monto: gananciaNeta,
+                descripcion: `Pago de premio: ${nombrePartido}`,
+                fecha: new Date()
+              });
+
+            } else {
+              await updateDoc(apuestaRef, {
+                estado: 'liquidado',
+                tipo: 'perdida',
+                valor: `- $${montoApostado.toLocaleString('es-CO')}`,
+                descripcion: `Apuesta Perdida: ${nombrePartido}`
+              });
+
+              await updateDoc(empresaRef, { saldoTotal: increment(montoApostado) });
+
+              await addDoc(collection(db, "transacciones_empresa"), {
+                tipo: 'ingreso',
+                monto: montoApostado,
+                descripcion: `Apuesta perdida: ${nombrePartido}`,
+                fecha: new Date()
+              });
+            }
+
+            await updateDoc(usuarioRef, { saldo: saldoUsuario });
+            contadorLiquidadas++;
+          }
+        }
+
+        await deleteDoc(partidoRef);
+        alert(`¡Partido liquidado con éxito! Se procesaron ${contadorLiquidadas} apuestas y el partido fue eliminado.`);
+        
+        if (rolActual === 'admin') cargarSaldoEmpresa();
+        cargarPartidosAdmin();
+
+      } catch (error) {
+        console.error("Error al liquidar partido:", error);
+        alert("Ocurrió un error al procesar la liquidación.");
+      }
+    }
+
+    window.eliminarPartido = async function(idPartido) {
+      if (rolActual !== 'admin') {
+        alert("Acceso denegado.");
+        return;
+      }
+      if (confirm('¿Estás seguro de eliminar este partido?')) {
+        try {
+          await deleteDoc(doc(db, "partidos", idPartido));
+          alert('Partido eliminado correctamente.');
+          cargarPartidosAdmin();
+        } catch (error) { alert('No se pudo eliminar.'); }
+      }
+    }
+
+    // Funciones para Gestión de Usuarios
+    window.cargarUsuariosAdmin = async function() {
+      const contenedor = document.getElementById('listaUsuariosAdmin');
+      contenedor.innerHTML = 'Cargando usuarios...';
+      try {
+        const querySnapshot = await getDocs(collection(db, "usuarios"));
+        contenedor.innerHTML = '';
+
+        if (querySnapshot.empty) {
+          contenedor.innerHTML = '<p style="color: #666; font-size: 0.9rem;">No hay usuarios registrados.</p>';
+          return;
+        }
+
+        querySnapshot.forEach((docu) => {
+          const u = docu.data();
+          const idUsuario = docu.id;
+          const rolUsuarioTarget = u.rol || 'usuario';
+          const estadoBloqueo = u.bloqueado ? '<span style="color: red; font-weight: bold;">[Bloqueado]</span>' : '<span style="color: green;">[Activo]</span>';
+          
+          let selectorRolHTML = '';
+          if (rolActual === 'admin') {
+            selectorRolHTML = `
+              <div style="margin-top: 6px; display: flex; gap: 5px; align-items: center;">
+                <label style="font-size: 0.8rem; color: #333;">Rol:</label>
+                <select onchange="cambiarRolUsuario('${idUsuario}', this.value)" style="padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85rem;">
+                  <option value="usuario" ${rolUsuarioTarget === 'usuario' ? 'selected' : ''}>Usuario</option>
+                  <option value="moderador" ${rolUsuarioTarget === 'moderador' ? 'selected' : ''}>Moderador</option>
+                  <option value="admin" ${rolUsuarioTarget === 'admin' ? 'selected' : ''}>Admin</option>
+                </select>
+              </div>
+            `;
+          } else {
+            selectorRolHTML = `<p style="font-size: 0.85rem; color: #555; margin-top: 4px;">Rol: <b>${rolUsuarioTarget}</b></p>`;
+          }
+
+          const textoBotonBloqueo = u.bloqueado ? 'Desbloquear' : 'Bloquear';
+          const colorBotonBloqueo = u.bloqueado ? '#16a34a' : '#dc2626';
+
+          const div = document.createElement('div');
+          div.style.cssText = "background: white; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px;";
+          div.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong>${u.nombre || 'Sin nombre'}</strong> (${u.correo}) ${estadoBloqueo}
+                <div style="font-size: 0.85rem; color: #64748b;">Saldo: $ ${(u.saldo || 0).toLocaleString('es-CO')}</div>
+              </div>
+              <div style="display: flex; gap: 5px;">
+                <button onclick="abrirModalUsuario('${idUsuario}', '${u.nombre || 'Usuario'}', '${u.correo}')" style="background: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                  <i class="fas fa-history"></i> Ver Apuestas
+                </button>
+                <button onclick="toggleBloqueoUsuario('${idUsuario}', ${!!u.bloqueado}, '${rolUsuarioTarget}')" style="background: ${colorBotonBloqueo}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                  <i class="fas fa-ban"></i> ${textoBotonBloqueo}
+                </button>
+              </div>
+            </div>
+            ${selectorRolHTML}
+          `;
+          contenedor.appendChild(div);
+        });
+      } catch (error) {
+        console.error("Error al cargar usuarios:", error);
+        contenedor.innerHTML = '<p style="color: red;">Error al cargar la lista de usuarios.</p>';
+      }
+    }
+
+    // Funciones del Modal de Historial de Usuario y Cancelación con Reembolso
+    window.abrirModalUsuario = async function(idUsuario, nombreUsuario, correoUsuario) {
+      const modal = document.getElementById('modalDetalleUsuario');
+      modal.style.display = 'flex';
+      document.getElementById('modalNombreUsuario').innerText = `Auditoría de Apuestas: ${nombreUsuario}`;
+      document.getElementById('modalCorreoUsuario').innerText = correoUsuario;
+      
+      const contenedor = document.getElementById('contenedorHistorialUsuarioModal');
+      contenedor.innerHTML = '<p style="color: #666; font-size: 0.9rem;">Cargando historial...</p>';
+      
+      try {
+        const q = query(collection(db, "historial_apuestas"), where("usuarioId", "==", idUsuario));
+        const snaps = await getDocs(q);
+        contenedor.innerHTML = '';
+        
+        if (snaps.empty) {
+          contenedor.innerHTML = '<p style="color: #666; font-size: 0.9rem;">Este usuario no tiene apuestas registradas.</p>';
+          return;
+        }
+
+        snaps.forEach(snap => {
+          const ap = snap.data();
+          const idAp = snap.id;
+          const monto = ap.numValor || 0;
+          const estado = ap.estado || 'activo';
+          
+          const div = document.createElement('div');
+          div.style.cssText = "background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;";
+          
+          let botonCancelarHTML = '';
+          if (estado === 'activo') {
+            botonCancelarHTML = `<button onclick="cancelarApuestaAdministrativa('${idAp}', '${idUsuario}', ${monto}, '${ap.descripcion || 'Apuesta'}')" style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;"><i class="fas fa-undo"></i> Cancelar y Reembolsar</button>`;
+          } else {
+            botonCancelarHTML = `<span style="font-size: 0.8rem; text-transform: uppercase; font-weight: bold; color: ${estado === 'liquidado' ? '#16a34a' : '#64748b'};">[${estado}]</span>`;
+          }
+
+          div.innerHTML = `
+            <div>
+              <strong>${ap.descripcion || 'Apuesta'}</strong><br>
+              <span style="font-size: 0.85rem; color: #475569;">Selección: <b>${ap.seleccion}</b> | Valor: $ ${monto.toLocaleString('es-CO')}</span>
+            </div>
+            <div>${botonCancelarHTML}</div>
+          `;
+          contenedor.appendChild(div);
+        });
+      } catch (error) {
+        console.error("Error al cargar apuestas del usuario:", error);
+        contenedor.innerHTML = '<p style="color: red; font-size: 0.9rem;">Error al obtener el historial.</p>';
+      }
+    }
+
+    window.cancelarApuestaAdministrativa = async function(idApuesta, idUsuario, monto, descripcion) {
+      const motivo = prompt("Indica el motivo de la cancelación y reembolso:");
+      if (!motivo) return;
+      
+      try {
+        // 1. Reembolsar saldo al usuario
+        const usuarioRef = doc(db, "usuarios", idUsuario);
+        await updateDoc(usuarioRef, { saldo: increment(monto) });
+
+        // 2. Actualizar estado de la apuesta
+        const apuestaRef = doc(db, "historial_apuestas", idApuesta);
+        await updateDoc(apuestaRef, { 
+          estado: 'cancelado', 
+          descripcion: `Cancelado por ${nombreAdminActual}: ${descripcion} (${motivo})` 
+        });
+
+        // 3. Enviar notificación al usuario
+        await addDoc(collection(db, "notificaciones_usuario"), {
+          usuarioId: idUsuario,
+          titulo: "Apuesta Cancelada",
+          mensaje: `Tu apuesta fue cancelada por el staff (${nombreAdminActual}). Motivo: ${motivo}. Reembolso acreditado: $${monto.toLocaleString('es-CO')}.`,
+          leido: false, 
+          fecha: new Date()
+        });
+
+        alert("Apuesta cancelada y saldo reembolsado con éxito.");
+        cerrarModalUsuario();
+        cargarUsuariosAdmin();
+      } catch(e) {
+        console.error("Error al cancelar apuesta:", e);
+        alert("Ocurrió un error al procesar el reembolso.");
+      }
+    }
+
+    window.cerrarModalUsuario = function() {
+      document.getElementById('modalDetalleUsuario').style.display = 'none';
+    }
+
+    window.cambiarRolUsuario = async function(idUsuario, nuevoRol) {
+      if (rolActual !== 'admin') {
+        alert("Acceso denegado: Solo el Administrador puede modificar roles.");
+        cargarUsuariosAdmin();
+        return;
+      }
+      try {
+        await updateDoc(doc(db, "usuarios", idUsuario), { rol: nuevoRol });
+        alert(`¡Rol actualizado a "${nuevoRol}" con éxito!`);
+      } catch (error) {
+        console.error("Error al cambiar rol:", error);
+        alert("No se pudo actualizar el rol.");
+      }
+    }
+
+    window.toggleBloqueoUsuario = async function(idUsuario, estaBloqueadoActual, rolDelUsuarioAfectado) {
+      if (rolActual === 'moderador' && (rolDelUsuarioAfectado === 'admin' || rolDelUsuarioAfectado === 'moderador')) {
+        alert("Acceso denegado: Los moderadores no pueden bloquear cuentas de administradores ni de otros moderadores.");
+        return;
+      }
+
+      const accionTexto = estaBloqueadoActual ? "¿Desbloquear esta cuenta?" : "¿Bloquear esta cuenta sospechosa?";
+      if (!confirm(accionTexto)) return;
+
+      try {
+        await updateDoc(doc(db, "usuarios", idUsuario), { bloqueado: !estaBloqueadoActual });
+        alert(estaBloqueadoActual ? "Cuenta desbloqueada." : "Cuenta bloqueada con éxito.");
+        cargarUsuariosAdmin();
+      } catch (error) {
+        console.error("Error al modificar estado de bloqueo:", error);
+        alert("Ocurrió un error al procesar la solicitud.");
+      }
+    }
+
+    // Función para Cargar el Historial Financiero de la Empresa
+    window.cargarHistorialEmpresa = async function() {
+      if (rolActual !== 'admin') return;
+      const contenedor = document.getElementById('listaHistorialEmpresa');
+      contenedor.innerHTML = 'Cargando transacciones...';
+
+      try {
+        const querySnapshot = await getDocs(collection(db, "transacciones_empresa"));
+        contenedor.innerHTML = '';
+
+        if (querySnapshot.empty) {
+          contenedor.innerHTML = '<p style="color: #666; font-size: 0.9rem;">No hay transacciones registradas todavía.</p>';
+          return;
+        }
+
+        querySnapshot.forEach((docu) => {
+          const t = docu.data();
+          const esIngreso = t.tipo === 'ingreso';
+          const colorFondo = esIngreso ? '#dcfce7' : '#fee2e2';
+          const colorTexto = esIngreso ? '#16a34a' : '#dc2626';
+          const signo = esIngreso ? '+' : '-';
+          
+          let fechaFormateada = 'Fecha desconocida';
+          if (t.fecha && t.fecha.toDate) {
+            fechaFormateada = t.fecha.toDate().toLocaleString('es-CO');
+          }
+
+          const div = document.createElement('div');
+          div.style.cssText = `background: ${colorFondo}; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 10px;`;
+          div.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong style="color: ${colorTexto}; text-transform: uppercase; font-size: 0.85rem;"><i class="fas fa-${esIngreso ? 'arrow-down' : 'arrow-up'}"></i> ${t.tipo}</strong>
+              <span style="font-size: 0.8rem; color: #555;">${fechaFormateada}</span>
+            </div>
+            <p style="margin: 6px 0; font-size: 0.9rem; color: #1e293b;">${t.descripcion || 'Sin descripción'}</p>
+            <div style="font-weight: bold; color: ${colorTexto}; font-size: 1rem;">
+              ${signo} $ ${(t.monto || 0).toLocaleString('es-CO')}
+            </div>
+          `;
+          contenedor.appendChild(div);
+        });
+      } catch (error) {
+        console.error("Error al cargar historial financiero:", error);
+        contenedor.innerHTML = '<p style="color: red;">Error al cargar las transacciones.</p>';
+      }
+    }
+  </script>
+</body>
+</html>

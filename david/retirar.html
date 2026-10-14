@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayExpert - Retirar Fondos</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=menu" />
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+
+  <header class="header">
+    <button class="menu-toggle" id="menu-button">
+      <span class="material-symbols-outlined">menu</span>
+    </button>
+    <div class="logo">
+      <img src="imagenes/logo.png" alt="PlayExpert Logo">
+      <div class="logo-text">PlayExpert</div>
+    </div>
+    <nav id="nav-principal" class="nav">
+      <ul> 
+        <h3><li><a href="deportes.html">Deportes</a></li></h3>
+        <h3><li><a href="live.html">Apuestas en Vivo</a></li></h3>
+        <h3><li><a href="jugadores.html">Jugadores</a></li></h3>
+        <h3><li><a href="cuenta.html">Mi Cuenta</a></li></h3>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="contenedor-deposito">
+    <section class="panel-deposito">
+      <h2 class="titulo-seccion">Retirar Fondos</h2>
+      
+      <div class="saldo-actual">
+        <span>Tu Saldo Disponible</span>
+        <strong id="saldoTexto">$0 COP</strong>
+      </div>
+
+      <form id="retiroForm">
+        <div class="grupo-formulario">
+          <label for="metodo">Método de Retiro:</label>
+          <select id="metodo" required>
+            <option value="Nequi">Nequi</option>
+            <option value="Daviplata">Daviplata</option>
+            <option value="Transferencia Bancaria">Transferencia Bancaria (PSE)</option>
+          </select>
+        </div>
+
+        <div class="grupo-formulario">
+          <label for="monto">Monto a Retirar (COP):</label>
+          <input type="number" id="monto" min="10000" placeholder="Mínimo $10.000" required>
+        </div>
+
+        <button type="submit" class="btn-depositar" style="background-color: #2563eb;">Confirmar Retiro</button>
+      </form>
+
+      <a href="cuenta.html" class="btn-regresar">Volver a Mi Cuenta</a>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-9Bb0Z46mMW9kae7_7WD2j0E_S0pDxB8",
+      authDomain: "playexpert.firebaseapp.com",
+      projectId: "playexpert",
+      storageBucket: "playexpert.firebasestorage.app",
+      messagingSenderId: "2187644623",
+      appId: "1:2187644623:web:361a8220c3a86fad9231ba",
+      measurementId: "G-RYEMRYNFJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const menuButton = document.getElementById('menu-button');
+    const navPrincipal = document.getElementById('nav-principal');
+
+    if (menuButton && navPrincipal) {
+      menuButton.addEventListener('click', () => {
+        navPrincipal.classList.toggle('active');
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const sesionActiva = localStorage.getItem('sesion_activa');
+      if (sesionActiva !== 'true') {
+        window.location.href = 'iniciosesion.html';
+        return;
+      }
+
+      let saldoActual = localStorage.getItem('usuario_saldo') || '50000';
+      document.getElementById('saldoTexto').textContent = '$' + parseInt(saldoActual).toLocaleString('es-CO') + ' COP';
+    });
+
+    document.getElementById('retiroForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const montoInput = document.getElementById('monto').value;
+      const metodoSelect = document.getElementById('metodo').value;
+      const monto = parseInt(montoInput);
+      let saldoActual = parseInt(localStorage.getItem('usuario_saldo') || '0');
+      
+      if (isNaN(monto) || monto < 10000) {
+        alert('El monto mínimo de retiro es $10.000 COP');
+        return;
+      }
+
+      if (monto > saldoActual) {
+        alert('Saldo insuficiente para realizar este retiro.');
+        return;
+      }
+
+      let nuevoSaldo = saldoActual - monto;
+      localStorage.setItem('usuario_saldo', nuevoSaldo.toString());
+
+      const usuarioId = localStorage.getItem('usuario_id');
+
+      try {
+        if (usuarioId) {
+          const usuarioRef = doc(db, "usuarios", usuarioId);
+          await updateDoc(usuarioRef, { saldo: nuevoSaldo });
+        }
+
+        // Guardar el retiro en la colección privada de historial
+        await addDoc(collection(db, "historial_apuestas"), {
+          usuarioId: usuarioId,
+          descripcion: `Retiro procesado hacia ${metodoSelect}`,
+          detalle: `Método: ${metodoSelect}`,
+          valor: `- $${monto.toLocaleString('es-CO')}`,
+          numValor: monto,
+          tipo: 'perdida',
+          fecha: new Date().toLocaleDateString(),
+          timestamp: new Date()
+        });
+
+        alert('¡Retiro procesado exitosamente!');
+        window.location.href = 'cuenta.html';
+
+      } catch (error) {
+        console.error("Error al registrar el retiro en Firebase:", error);
+        alert("Error al guardar el retiro en la base de datos.");
+      }
+    });
+  </script>
+
+</body>
+</html>
