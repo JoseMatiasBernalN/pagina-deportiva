@@ -77,6 +77,7 @@ if (formRegistro) {
       ciudad: document.getElementById('ciudad').value.trim(),
       password: document.getElementById('contrasena').value,
       saldo: 50000,
+      rol: esAdmin ? "admin" : "cliente",
       fechaRegistro: new Date()
     };
 
