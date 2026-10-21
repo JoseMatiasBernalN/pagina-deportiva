@@ -1,15 +1,14 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, doc, updateDoc, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// Usa la misma configuración que te funcione en depositar.html / retirar.html
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
 const firebaseConfig = {
-  apiKey: "AIzaSyA-9Bb0Z46mMW9kae7_7WD2j0E_S0pDxB8",
-  authDomain: "playexpert.firebaseapp.com",
-  projectId: "playexpert",
-  storageBucket: "playexpert.firebasestorage.app",
-  messagingSenderId: "2187644623",
-  appId: "1:2187644623:web:361a8220c3a86fad9231ba",
-  measurementId: "G-RYEMRYNFJ"
+  apiKey: "AIzaSyB5dEiWhSrQ8bEEa_1c_tYLzw8MEeLAAj4",
+  authDomain: "disenowed-6eb3b.firebaseapp.com",
+  projectId: "disenowed-6eb3b",
+  storageBucket: "disenowed-6eb3b.firebasestorage.app",
+  messagingSenderId: "176191941008",
+  appId: "1:176191941008:web:49dce9b511eb9993ab2b15"
 };
 export const db = getFirestore(initializeApp(firebaseConfig));
 export { collection, getDocs, addDoc };
