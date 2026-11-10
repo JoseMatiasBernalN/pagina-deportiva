@@ -1,0 +1,76 @@
+PLAYEXPERT VUE — CONTEXTO Y ESTADO ACTUAL
+Actualizado: 10 de noviembre de 2026
+
+Este documento resume lo que hay en el proyecto y distingue la migración
+que ya estaba hecha de los cambios posteriores de Codex. No pretende cambiar
+el alcance del proyecto: el objetivo acordado es terminar la migración y,
+por ahora, conservar lo existente.
+
+1. BASE QUE YA EXISTÍA (MIGRACIÓN ANTERIOR)
+
+- El proyecto está en playexpert-vue y usa Vue 3, Vite, Vue Router, Pinia y
+  Firebase.
+- La aplicación es una SPA con rutas definidas en src/router/index.js.
+- Hay vistas para Inicio, Login, Registro, Cuenta, Depositar, Retirar,
+  Historial, Admin, Fútbol, Baloncesto, Jugadores, Juegos y Apuestas en Vivo.
+- Hay componentes reutilizables en src/components, incluyendo NavBar,
+  AuthLayout, GameCard, tarjetas de eventos y estadísticas.
+- La sesión y perfil Firebase se manejan en src/stores/auth.js; la conexión
+  Firebase está centralizada en src/firebase.js.
+- También existen firestore.rules, README.md, package.json y vite.config.js.
+- El README indica que la migración original dejó algunas vistas como
+  esqueletos. El estado visual/funcional de esas vistas debe compararse con
+  el HTML estático original antes de afirmar que la migración está completa.
+- No se deben atribuir a Codex los archivos anteriores: ya estaban en el
+  proyecto cuando empezó el trabajo de Codex.
+
+2. CAMBIOS QUE HIZO CODEX
+
+Único archivo de aplicación modificado por Codex en esta etapa:
+src/views/Juegos.vue
+
+- Se mejoró la presentación de los cuatro minijuegos existentes:
+  Penalty Shootout, Slots, Ruleta y Dados.
+- Penales: cancha/estadio con red, portero y balón; animación del disparo,
+  movimiento del portero, resultado de gol/atajada y confeti al marcar.
+- Tragamonedas: gabinete y rodillos con movimiento, luces y destello al ganar.
+- Ruleta: rueda con sectores y números, giro y bola orbital.
+- Dados: caras dibujadas con puntos y animación de lanzamiento.
+- Se añadieron animaciones ambientales visibles al abrir cada juego:
+  movimiento suave del balón/portero, rodillos, bola de ruleta, dados y luces.
+- Se añadió en cada minijuego el botón “Ver animación gratis”. Es una vista
+  previa visual; no descuenta saldo ni escribe transacciones en Firebase.
+- Se conservó la lógica existente de apuestas, saldo, validación del mínimo,
+  premios y multiplicadores. La vista previa no ejecuta esa lógica.
+- Los efectos de una jugada real siguen requiriendo una apuesta válida.
+  En la captura recibida el saldo mostrado era $0 COP y la apuesta mínima es
+  $5.000 COP; por eso no era posible iniciar una jugada real desde esa cuenta.
+- Se añadió diseño adaptable a pantallas pequeñas y una regla de movimiento
+  reducido estuvo presente inicialmente, pero se retiró para que las
+  animaciones solicitadas no quedaran anuladas por esa preferencia del sistema.
+
+3. ESTADO TÉCNICO COMPROBADO
+
+- `npm run build` terminó correctamente después de los cambios de juegos.
+- Vite mostró que el servidor de desarrollo estaba listo en
+  http://localhost:5173/ y también anunció la dirección de red
+  http://192.168.18.58:5173/.
+- No se pudo confirmar visualmente la página usando la pestaña del navegador
+  de Codex. La compilación correcta confirma que Vue/Vite procesa el código,
+  pero no sustituye una revisión visual interactiva en el navegador del usuario.
+- Vite mostró una advertencia de tamaño de bundle mayor a 500 kB. No se cambió
+  la estructura de carga ni se atendió esa advertencia porque el alcance era
+  trabajar exclusivamente los juegos.
+- En el estado de Git observado, los archivos del proyecto aparecían como no
+  rastreados (??); por tanto, no hay un diff fiable que permita atribuir
+  automáticamente otros archivos a esta sesión.
+
+4. PARA CONTINUAR SIN SALIRSE DEL ALCANCE
+
+- Abrir /juegos y pulsar “Ver animación gratis” en cada juego para revisar
+  las animaciones sin necesitar saldo.
+- Si no aparecen, revisar que el navegador esté en el servidor actualizado y
+  recargar con Ctrl+F5; luego inspeccionar consola y estilos aplicados.
+- Para probar apuestas reales hace falta una sesión válida y saldo suficiente.
+- Mantener intactas las demás páginas y reglas hasta que el usuario solicite
+  expresamente otro cambio.

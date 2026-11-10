@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function estaAutenticado() {
+      return request.auth != null;
+    }
+    function esDueno(uid) {
+      return estaAutenticado() && request.auth.uid == uid;
+    }
+    function rolDe(uid) {
+      return get(/databases/$(database)/documents/usuarios/$(uid)).data.rol;
+    }
+    function esAdmin() {
+      return estaAutenticado() && rolDe(request.auth.uid) == 'admin';
+    }
+    function esStaff() {
+      return estaAutenticado() && rolDe(request.auth.uid) in ['admin', 'moderador'];
+    }
+
+    // --- Usuarios ---
+    // Antes: cualquier usuario podía, desde la consola del navegador,
+    // llamar directamente al SDK de Firestore y escribir
+    // { rol: "admin" } en su propio documento, porque la única
+    // "protección" era una variable en localStorage leída por el
+    // propio HTML (admin.html). Estas reglas corren en el servidor de
+    // Google, no en el navegador, así que no se pueden saltar.
+    match /usuarios/{uid} {
+      allow read: if esDueno(uid) || esStaff();
+
+      allow create: if esDueno(uid)
+                    && request.resource.data.rol == 'cliente'
+                    && request.resource.data.bloqueado == false
+                    && request.resource.data.saldo == 0;
+
+      allow update: if esAdmin()
+                    || (
+                      esDueno(uid)
+                      // el dueño nunca puede tocar su propio rol ni desbloquearse
+                      && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rol', 'bloqueado'])
+                      // límites básicos para el saldo mientras no haya
+                      // una Cloud Function que procese depósitos/retiros
+                      // de verdad (ver README, sección de seguridad)
+                      && request.resource.data.saldo >= 0
+                      && request.resource.data.saldo <= 50000000
+                    );
+
+      allow delete: if false;
+    }
+
+    // --- Partidos / eventos en vivo ---
+    match /partidos/{id} {
+      allow read: if true; // listado público, como en la página de inicio
+      allow create, update, delete: if esStaff();
+    }
+
+    // --- Caja de la empresa (solo el admin dueño) ---
+    match /empresa/{doc} {
+      allow read, write: if esAdmin();
+    }
+    match /transacciones_empresa/{id} {
+      allow read: if esAdmin();
+      allow create: if esStaff();
+      allow update, delete: if false;
+    }
+
+    // --- Historial de depósitos / retiros / apuestas ---
+    match /historial_apuestas/{id} {
+      allow read: if estaAutenticado() && (resource.data.usuarioId == request.auth.uid || esStaff());
+      allow create: if estaAutenticado() && request.resource.data.usuarioId == request.auth.uid;
+      allow update, delete: if esStaff();
+    }
+
+    // Cualquier otra colección no listada queda cerrada por defecto.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
